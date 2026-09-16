@@ -1,0 +1,54 @@
+---
+description: 每次开 plan / feature / fix 先从最新 main 拉分支实施；验收通过并跑完整 pytest 后再合入主干
+alwaysApply: true
+---
+
+# Git 分支与合主干
+
+本仓库按多分支并行开发。Agent **禁止在 `main` 上直接改代码**。一次 plan / 一个独立需求 = 一条分支。
+
+## 开工（先拉分支，再实施）
+
+用户要实施 plan、做 feature、修 bug、或其它独立改动时，**写文件之前**先建分支：
+
+1. 已在与本次任务匹配的分支上 → 继续用，不要另开。
+2. 否则从最新主干拉：
+
+```bash
+git fetch origin 2>/dev/null || true
+git checkout main
+git pull --ff-only origin main 2>/dev/null || true
+git checkout -b <type>/<short-kebab>
+```
+
+命名：`feature/` `fix/` `chore/` `refactor/` `docs/` `test/` + 短英文 kebab。例：`feature/light-dark-theme`、`fix/lookup-identity`。
+
+仓库还没有任何 commit 时，先等用户做初始提交；不要为了建分支而擅自 commit。
+
+## 实施
+
+只在该功能分支上改代码。不要切到别人的分支，也不要把无关改动混进当前分支。Commit / push 仍须用户明确要求。
+
+## 合主干（验收 + 测试跑批）
+
+合 `main` 前必须同时满足：
+
+- 本任务验收通过（实现完成；若改了 UI，按用户规则做浏览器验收）
+- 测试跑批全绿。先快闸门再全量（与 README 一致）：
+
+```bash
+uv run pytest tests/policy tests/mock tests/agent tests/rag
+uv run pytest
+```
+
+任一层失败 → **停在功能分支修**，禁止合主干。不要用「改动很小」跳过跑批。
+
+全绿后再合：
+
+```bash
+git checkout main
+git pull --ff-only origin main 2>/dev/null || true
+git merge --no-ff <branch>
+```
+
+有未提交改动时先停下来问用户是否 commit，不要把脏工作区合进 `main`。不要 `push --force` 主干；未要求时不要 push。

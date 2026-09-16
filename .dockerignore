@@ -1,0 +1,14 @@
+.venv/
+frontend/node_modules/
+frontend/dist/
+backend/rag/indexes/
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.git/
+hf-cache/
+.huggingface/
+*.egg-info/
+.DS_Store
