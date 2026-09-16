@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from functools import lru_cache
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -11,6 +11,7 @@ from sentence_transformers import SentenceTransformer
 
 from backend.config import settings
 from backend.rag.ingest import CODES, build_indexes
+from backend.rag.versions import select_applicable_chunks
 
 _indexes: dict[str, faiss.Index] = {}
 _docs: dict[str, list[dict]] = {}
@@ -50,6 +51,7 @@ def retrieve(
     airline: Optional[str] = None,
     k: int = 4,
     extra_context: Optional[str] = None,
+    as_of: datetime | str | None = None,
 ) -> list[dict]:
     if not _indexes:
         ensure_indexes()
@@ -60,22 +62,26 @@ def retrieve(
     codes = [airline] if airline in _indexes else list(CODES)
     hits: list[dict] = []
     for code in codes:
-        scores, idxs = _indexes[code].search(vec, min(k, _indexes[code].ntotal))
+        ntotal = _indexes[code].ntotal
+        if ntotal <= 0:
+            continue
+        scores, idxs = _indexes[code].search(vec, ntotal)
+        scored: list[dict] = []
         for score, i in zip(scores[0], idxs[0]):
             if i < 0:
                 continue
             doc = dict(_docs[code][i])
             doc["score"] = float(score)
-            hits.append(doc)
+            scored.append(doc)
+        applicable = select_applicable_chunks(scored, as_of)
+        applicable.sort(key=lambda h: h["score"], reverse=True)
+        hits.extend(applicable[:k])
     hits.sort(key=lambda h: h["score"], reverse=True)
     if airline:
         return hits[:k]
     grouped = []
-    seen = set()
     for h in hits:
-        key = h["airline_code"]
-        count = sum(1 for g in grouped if g["airline_code"] == key)
+        count = sum(1 for g in grouped if g["airline_code"] == h["airline_code"])
         if count < k:
             grouped.append(h)
-            seen.add(key)
     return grouped

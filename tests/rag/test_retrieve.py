@@ -1,8 +1,8 @@
+import json
 from pathlib import Path
 
 import pytest
 
-from backend.config import settings
 from backend.rag.ingest import build_indexes
 from backend.rag.retrieve import load_indexes, retrieve
 
@@ -54,3 +54,44 @@ def test_ownership_pnr_surname_not_enough(built_index):
     hits = retrieve("is a booking reference and surname enough authority", airline="NSA")
     text = " ".join(h["text"].lower() for h in hits)
     assert "not authority" in text or "surname" in text
+
+
+def test_index_meta_lists_documents(built_index):
+    meta = json.loads((Path(built_index) / "meta.json").read_text())
+    docs = {d["airline"]: d for d in meta["documents"]}
+    assert docs["STA"]["version"] == "1.4"
+    assert docs["STA"]["effective_at"].startswith("2026-03-01")
+    assert docs["NSA"]["version"] == "2.0"
+    assert docs["BHA"]["version"] == "3.0"
+    assert docs["BHA"]["effective_at"].startswith("2026-07-01")
+
+
+def test_hits_include_version_metadata(built_index):
+    hits = retrieve("baggage", airline="STA", as_of="2026-09-16T12:00:00+00:00")
+    assert hits
+    assert all(h["version"] == "1.4" for h in hits)
+    assert all(h["effective_at"].startswith("2026-03-01") for h in hits)
+
+
+def test_as_of_before_sta_and_bha_only_nsa(built_index):
+    hits = retrieve("Economy Basic cabin bag allowance", airline=None, k=2, as_of="2026-02-01T00:00:00+00:00")
+    assert {h["airline_code"] for h in hits} == {"NSA"}
+    assert all(h["version"] == "2.0" for h in hits)
+
+
+def test_as_of_before_bha_excludes_bha(built_index):
+    hits = retrieve("Economy Basic cabin bag allowance", airline=None, k=2, as_of="2026-05-01T00:00:00+00:00")
+    codes = {h["airline_code"] for h in hits}
+    assert codes == {"STA", "NSA"}
+    blob = " ".join(h["text"] for h in hits)
+    assert "Bluehaven" not in blob
+
+
+def test_as_of_after_all_returns_three(built_index):
+    hits = retrieve("Economy Basic cabin bag allowance", airline=None, k=2, as_of="2026-09-16T12:00:00+00:00")
+    assert {h["airline_code"] for h in hits} == {"STA", "NSA", "BHA"}
+
+
+def test_known_airline_before_effective_is_empty(built_index):
+    hits = retrieve("change fee", airline="BHA", as_of="2026-05-01T00:00:00+00:00")
+    assert hits == []

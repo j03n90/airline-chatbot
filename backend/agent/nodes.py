@@ -51,15 +51,29 @@ def retrieve_policy(state: AgentState) -> AgentState:
         extra.append(f"airline={state['airline']}")
     if state.get("booking"):
         extra.append(f"fare={state['booking'].get('fare_type')}")
-    hits = retrieve(state.get("user_text") or "", airline=state.get("airline"), extra_context=" ".join(extra))
+    as_of = state.get("now_utc")
+    hits = retrieve(
+        state.get("user_text") or "",
+        airline=state.get("airline"),
+        extra_context=" ".join(extra),
+        as_of=as_of,
+    )
     state["last_retrieval"] = hits
     _trace(
         state,
         "retrieve_policy",
         {
             "airline": state.get("airline"),
+            "as_of": as_of,
             "sources": [
-                {"airline": h["airline_code"], "section": h["section"], "title": h["title"], "page": h["page"]}
+                {
+                    "airline": h["airline_code"],
+                    "section": h["section"],
+                    "title": h["title"],
+                    "page": h["page"],
+                    "version": h.get("version"),
+                    "effective_at": h.get("effective_at"),
+                }
                 for h in hits
             ],
         },
@@ -270,10 +284,24 @@ def compose_reply(state: AgentState) -> AgentState:
     if retrieval:
         sources = []
         for hit in retrieval[:8]:
-            sources.append(f"[{hit['airline_name']} section {hit['section']} p.{hit['page']}] {hit['text'][:900]}")
+            version = hit.get("version") or "?"
+            effective = (hit.get("effective_at") or "")[:10] or "unknown"
+            sources.append(
+                f"[{hit['airline_name']} v{version} effective {effective} section {hit['section']} p.{hit['page']}] {hit['text'][:900]}"
+            )
         facts.append("POLICY SOURCES:\n" + "\n\n".join(sources))
+        if state.get("now_utc"):
+            facts.append(
+                f"Request time (as-of): {state['now_utc']}. Use only the policy versions in force at this instant. "
+                "Do not use a later version that is not yet effective."
+            )
         if not state.get("airline") and len({h["airline_code"] for h in retrieval}) > 1:
             facts.append("Airline is unknown. Explain that rules differ by airline. Do not merge them into one rule.")
+    elif state.get("intent") == "policy_qa":
+        facts.append(
+            f"No in-force passenger policy publication covers a request at {state.get('now_utc') or 'this request time'}. "
+            "Do not invent a rule. Do not use a version that is not yet effective."
+        )
 
     if booking and state.get("intent") == "lookup" and not quote:
         segs = ", ".join(
@@ -286,7 +314,8 @@ def compose_reply(state: AgentState) -> AgentState:
         "You are a trial airline service assistant for three fictional airlines: "
         "Suntrail Air (STA), Northstar Air (NSA), Bluehaven Airways (BHA). "
         "Never invent fees. If a quote JSON is present, use those numbers exactly. "
-        "Cite airline + section when answering policy. "
+        "Cite airline + version + effective date + section when answering policy. "
+        "Only use the provided in-force sources; never answer from a version that is not yet effective. "
         "If sources disagree across airlines, say it depends on the airline. "
         "PNR + surname alone is not enough identity. "
         "Do not claim a booking was changed unless the confirm step succeeded. "
@@ -321,7 +350,19 @@ def _fallback_reply(state: AgentState, facts: list[str]) -> str:
         )
     if retrieval:
         top = retrieval[0]
-        return f"{top['airline_name']} section {top['section']}: {top['text'][:600]}"
+        version = top.get("version")
+        effective = (top.get("effective_at") or "")[:10]
+        if version:
+            cite = f"{top['airline_name']} v{version} effective {effective} section {top['section']}"
+        else:
+            cite = f"{top['airline_name']} section {top['section']}"
+        return f"{cite}: {top['text'][:600]}"
+    if state.get("intent") == "policy_qa":
+        as_of = state.get("now_utc") or "this request time"
+        return (
+            f"No in-force passenger policy publication covers a request at {as_of}. "
+            "I will not invent a rule or use a version that is not yet effective."
+        )
     if state.get("booking"):
         b = state["booking"]
         return f"I found booking {b['pnr']} on {b['airline']} ({b['fare_type']}). How can I help?"
