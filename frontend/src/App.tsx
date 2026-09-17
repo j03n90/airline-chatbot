@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import BookingCard from "./components/BookingCard";
 import CaseList from "./components/CaseList";
 import ChatPane from "./components/ChatPane";
@@ -35,6 +35,7 @@ export default function App() {
   const [status, setStatus] = useState("Open Lab to load a test case.");
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [theme, setTheme] = useState<Theme>(() => readTheme());
+  const bootMockId = useRef(mockSession);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,6 +55,24 @@ export default function App() {
       }
     }
     void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function boot() {
+      try {
+        const created = await createAssistantSession(bootMockId.current);
+        if (!cancelled) {
+          setAssistantSession((current) => current ?? created.session_id);
+        }
+      } catch {
+        // Header falls back to the client mock session id.
+      }
+    }
+    void boot();
     return () => {
       cancelled = true;
     };
@@ -136,6 +155,7 @@ export default function App() {
         <span className="orb orb-c" />
       </div>
       <ChatPane
+        sessionId={assistantSession ?? mockSession}
         status={status}
         labOpen={labOpen}
         onToggleLab={onToggleLab}
