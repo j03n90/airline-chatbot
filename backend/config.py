@@ -9,9 +9,9 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 class Settings:
-    deepseek_api_key: str = os.getenv("DEEPSEEK_API_KEY", "")
-    deepseek_base_url: str = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
-    deepseek_model: str = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+    api_key: str = os.getenv("API_KEY", "")
+    base_url: str = os.getenv("BASE_URL", "https://api.deepseek.com")
+    model: str = os.getenv("MODEL", "deepseek-chat")
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     index_dir: Path = ROOT / "backend" / "rag" / "indexes"
     policy_dir: Path = ROOT / "airline" / "airline-policies"

@@ -43,7 +43,7 @@ if dist.exists():
 def meta():
     return {
         "name": "airline-service-assistant",
-        "llm": settings.deepseek_model,
+        "llm": settings.model,
         "embedding": settings.embedding_model,
         "package_manager": "uv",
     }

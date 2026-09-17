@@ -78,9 +78,9 @@ def run_turn(session_id: str, message: str) -> AgentState:
 def health() -> HealthResponse:
     return HealthResponse(
         ok=True,
-        llm_configured=bool(settings.deepseek_api_key),
+        llm_configured=bool(settings.api_key),
         faiss_loaded=indexes_ready(),
-        model=settings.deepseek_model,
+        model=settings.model,
         embedding_model=settings.embedding_model,
     )
 

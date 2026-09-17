@@ -4,7 +4,7 @@
 
 Conversational assistant for three fictional airlines (Suntrail Air, Northstar Air, Bluehaven Airways). One process, two HTTP surfaces:
 
-- `/api/assistant/*` -- 旅客助手 / customer assistant（DeepSeek + LangGraph + FAISS）
+- `/api/assistant/*` -- 旅客助手 / customer assistant（OpenAI-compatible chat API + LangGraph + FAISS）
 - `/api/mock/*` -- 订座试验台 / mock booking bench，用来灌入和查看测试数据 / used to seed and inspect test data
 
 Python 依赖**只通过 [uv](https://docs.astral.sh/uv/) 管理**，不要用 `pip install`。
@@ -13,24 +13,29 @@ Python dependencies are managed **only with [uv](https://docs.astral.sh/uv/)**. 
 
 ---
 
-## DeepSeek API 密钥 / API key
+## 聊天 API 密钥 / Chat API key
 
-本项目调用 DeepSeek（`deepseek-chat`）。**仓库里不含密钥。**
+本项目通过 **OpenAI 兼容的 Chat Completions** 调用聊天模型（OpenAI、DeepSeek、Moonshot/Kimi 等均可）。换服务商时必须同时改 `API_KEY`、`BASE_URL`、`MODEL`。**仓库里不含密钥。**
 
-This project talks to DeepSeek (`deepseek-chat`). **The git repository does not contain an API key.**
+This project talks to an **OpenAI-compatible Chat Completions** API (OpenAI, DeepSeek, Moonshot/Kimi, and similar). Change `API_KEY`, `BASE_URL`, and `MODEL` together when you switch providers. **The git repository does not contain an API key.**
 
 1. 把 `.env.example` 复制为 `.env`。 / Copy `.env.example` to `.env`.
-2. 在 `.env` 里填入密钥： / Put your key in `.env`:
+2. 在 `.env` 里填入与服务商匹配的三项： / Put values that match your provider in `.env`:
 
 ```
-DEEPSEEK_API_KEY=your_key_here
-DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL=deepseek-chat
+API_KEY=your_key_here
+BASE_URL=https://api.deepseek.com
+MODEL=deepseek-chat
 ```
 
-`.env` 已被 gitignore。检索用的向量由本地开源模型 `sentence-transformers/all-MiniLM-L6-v2` 生成（`uv run python -m backend.rag.ingest`）；运行时检索不会用 DeepSeek 做 embedding。
+`BASE_URL` **不要**自带 `/v1`（客户端会追加）。示例 / Do **not** include `/v1` on `BASE_URL`; the client appends it. Examples:
 
-`.env` is gitignored. Embeddings / FAISS indexes are built locally with `sentence-transformers/all-MiniLM-L6-v2`. Runtime retrieval does not call DeepSeek for embeddings.
+- OpenAI: `BASE_URL=https://api.openai.com` `MODEL=gpt-4o-mini`
+- Moonshot/Kimi: `BASE_URL=https://api.moonshot.cn` `MODEL=moonshot-v1-32k`
+
+`.env` 已被 gitignore。检索用的向量由本地开源模型 `sentence-transformers/all-MiniLM-L6-v2` 生成（`uv run python -m backend.rag.ingest`）；运行时检索不会用聊天 API 做 embedding。
+
+`.env` is gitignored. Embeddings / FAISS indexes are built locally with `sentence-transformers/all-MiniLM-L6-v2`. Runtime retrieval does not call the chat API for embeddings.
 
 ---
 
@@ -63,9 +68,9 @@ uv run uvicorn backend.app:app --port 8080
 
 ## 测试 / Tests
 
-分层门禁，按这个顺序跑。默认套件**不必**标 `eval` -- 助手测试断言报价 / reason code，只有润色回复时才调用 DeepSeek。
+分层门禁，按这个顺序跑。默认套件**不必**标 `eval` -- 助手测试断言报价 / reason code，只有润色回复时才调用聊天模型。
 
-Layered gates; run them in this order. Default suite does **not** need to be marked `eval` -- assistant tests assert quotes/reason codes and use DeepSeek only when composing prose.
+Layered gates; run them in this order. Default suite does **not** need to be marked `eval` -- assistant tests assert quotes/reason codes and use the chat model only when composing prose.
 
 ```bash
 uv run pytest tests/policy tests/mock tests/agent tests/rag   # policy/mock/rag 不需要聊天模型 / no chat model required
