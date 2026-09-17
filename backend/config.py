@@ -17,6 +17,10 @@ class Settings:
     policy_dir: Path = ROOT / "airline" / "airline-policies"
     host: str = "0.0.0.0"
     port: int = int(os.getenv("PORT", "8080"))
+    checkpoint_backend: str = os.getenv("CHECKPOINT_BACKEND", "sqlite")
+    checkpoint_sqlite_path: Path = Path(
+        os.getenv("CHECKPOINT_SQLITE_PATH") or str(ROOT / "data" / "checkpoints.sqlite")
+    )
 
 
 settings = Settings()

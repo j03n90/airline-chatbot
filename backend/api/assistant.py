@@ -23,8 +23,11 @@ from backend.rag.retrieve import indexes_ready
 
 router = APIRouter(prefix="/api/assistant", tags=["assistant"])
 
-_sessions: dict[str, AgentState] = {}
 _traces: dict[str, list[dict[str, Any]]] = {}
+
+
+def thread_config(session_id: str) -> dict[str, Any]:
+    return {"configurable": {"thread_id": session_id}}
 
 
 def _blank_state(session_id: str, mock_session_id: str) -> AgentState:
@@ -48,19 +51,24 @@ def _blank_state(session_id: str, mock_session_id: str) -> AgentState:
     )
 
 
-def run_turn(session_id: str, message: str) -> AgentState:
-    if session_id not in _sessions:
+def load_session_state(session_id: str) -> AgentState:
+    values = GRAPH.get_state(thread_config(session_id)).values or {}
+    if not values.get("session_id"):
         raise KeyError(session_id)
-    prior = _sessions[session_id]
-    state: AgentState = {
-        **prior,
-        "user_text": message,
-        "reply": "",
-        "last_retrieval": [],
-        "last_tool_trace": [],
-    }
-    result = GRAPH.invoke(state)
-    _sessions[session_id] = result
+    return values  # type: ignore[return-value]
+
+
+def run_turn(session_id: str, message: str) -> AgentState:
+    load_session_state(session_id)
+    result = GRAPH.invoke(
+        {
+            "user_text": message,
+            "reply": "",
+            "last_retrieval": [],
+            "last_tool_trace": [],
+        },
+        thread_config(session_id),
+    )
     history = _traces.setdefault(session_id, [])
     history.extend(result.get("last_tool_trace") or [])
     return result
@@ -80,15 +88,16 @@ def health() -> HealthResponse:
 @router.post("/sessions", response_model=CreateAssistantSessionResponse)
 def create_session(body: CreateAssistantSessionRequest) -> CreateAssistantSessionResponse:
     session_id = uuid4().hex
-    _sessions[session_id] = _blank_state(session_id, body.mock_session_id)
+    GRAPH.update_state(thread_config(session_id), _blank_state(session_id, body.mock_session_id))
     _traces[session_id] = []
     return CreateAssistantSessionResponse(session_id=session_id, mock_session_id=body.mock_session_id)
 
 
 @router.get("/sessions/{session_id}", response_model=AssistantSessionSummary)
 def get_session(session_id: str) -> AssistantSessionSummary:
-    state = _sessions.get(session_id)
-    if state is None:
+    try:
+        state = load_session_state(session_id)
+    except KeyError:
         raise HTTPException(status_code=404, detail="unknown_session")
     airline = state.get("airline")
     booking = state.get("booking") or {}
@@ -106,8 +115,9 @@ def get_session(session_id: str) -> AssistantSessionSummary:
 
 @router.get("/sessions/{session_id}/trace", response_model=TraceResponse)
 def get_trace(session_id: str) -> TraceResponse:
-    state = _sessions.get(session_id)
-    if state is None:
+    try:
+        state = load_session_state(session_id)
+    except KeyError:
         raise HTTPException(status_code=404, detail="unknown_session")
     items = _traces.get(session_id) or []
     retrieval = []

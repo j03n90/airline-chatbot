@@ -43,6 +43,15 @@ def test_presets_cover_catalog():
     assert all(c.get("starterMessageZh") for c in CASE_CATALOG)
 
 
+def test_chat_without_session_is_404():
+    r = client.post(
+        "/api/assistant/chat",
+        json={"session_id": "does-not-exist", "message": "hello"},
+        headers={"Accept": "application/json"},
+    )
+    assert r.status_code == 404
+
+
 @pytest.mark.parametrize("lang", ["en", "zh"])
 def test_change_sta_quote_then_confirm(lang):
     mock_id, sid = start_case("change_sta_standard_mixed", lang)

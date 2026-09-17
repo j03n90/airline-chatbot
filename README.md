@@ -99,4 +99,4 @@ Recommended path:
 
 Mock: `POST /api/mock/sessions/{id}/load`, `load-preset`, `lookup`, `quote-change`, `quote-cancel`, `confirm`, clock, bookings.
 
-Assistant: `GET /api/assistant/health`, `POST /api/assistant/sessions`, `POST /api/assistant/chat` (JSON if `Accept: application/json`, otherwise SSE), `GET .../trace`.
+Assistant: `GET /api/assistant/health`, `POST /api/assistant/sessions`, `POST /api/assistant/chat` (JSON if `Accept: application/json`, otherwise SSE), `GET .../trace`. Sessions are LangGraph threads (`thread_id` = `session_id`) checkpointed to sqlite (`data/checkpoints.sqlite` by default; tests use in-memory).

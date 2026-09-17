@@ -10,6 +10,13 @@ from backend.api.schemas import ConfirmRequest, QuoteCancelRequest, QuoteChangeR
 from backend.mock.client import MockClient
 from backend.rag.retrieve import retrieve
 
+HISTORY_WINDOW = 8
+COMPOSE_FACTS_GUARD = (
+    "Recent conversation may be used only for references. "
+    "Fees, whether a change or cancel is allowed, and traveler identity must come only from Facts. "
+    "Never use numbers mentioned only in the chat history."
+)
+
 
 def _trace(state: AgentState, step: str, detail: dict[str, Any]) -> None:
     items = list(state.get("last_tool_trace") or [])
@@ -326,9 +333,10 @@ def compose_reply(state: AgentState) -> AgentState:
         "Do not claim a booking was changed unless the confirm step succeeded. "
         "Pets, lounge, loyalty, unaccompanied minors: say the policy pack does not cover them and hand off. "
         "Reply in the same language as the user. "
+        f"{COMPOSE_FACTS_GUARD} "
         "Keep the reply short."
     )
-    drafted = complete(system, f"User: {state.get('user_text')}\n\nFacts:\n" + "\n".join(facts))
+    drafted = complete(system, _compose_user_payload(state, facts))
     if not drafted:
         drafted = _fallback_reply(state, facts)
     state["reply"] = drafted
@@ -336,6 +344,25 @@ def compose_reply(state: AgentState) -> AgentState:
     messages.append({"role": "assistant", "content": drafted})
     state["messages"] = messages
     return state
+
+
+def _recent_transcript(state: AgentState) -> str:
+    messages = list(state.get("messages") or [])[-HISTORY_WINDOW:]
+    lines = []
+    for item in messages:
+        role = item.get("role") or "user"
+        content = item.get("content") or ""
+        lines.append(f"{role}: {content}")
+    return "\n".join(lines)
+
+
+def _compose_user_payload(state: AgentState, facts: list[str]) -> str:
+    parts = [f"User: {state.get('user_text')}"]
+    transcript = _recent_transcript(state)
+    if transcript:
+        parts.append(f"Recent conversation:\n{transcript}")
+    parts.append("Facts:\n" + "\n".join(facts))
+    return "\n\n".join(parts)
 
 
 def _fallback_reply(state: AgentState, facts: list[str]) -> str:
