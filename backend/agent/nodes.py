@@ -166,7 +166,12 @@ def quote_cancel(state: AgentState) -> AgentState:
                 passenger_id = p["id"]
                 break
     segment_ids = state.get("cancel_segment_ids")
-    if re.search(r"just the first|only one segment|keep the second|selected segment", text, re.I):
+    if re.search(
+        r"just the first|only one segment|keep the second|selected segment|"
+        r"只要第一段|只取消第一程|只取消第一段|保留第二段",
+        text,
+        re.I,
+    ):
         segment_ids = [booking["segments"][0]["id"]]
     req = QuoteCancelRequest(
         pnr=booking["pnr"],
@@ -291,6 +296,7 @@ def compose_reply(state: AgentState) -> AgentState:
         "PNR + surname alone is not enough identity. "
         "Do not claim a booking was changed unless the confirm step succeeded. "
         "Pets, lounge, loyalty, unaccompanied minors: say the policy pack does not cover them and hand off. "
+        "Reply in the same language as the user. "
         "Keep the reply short."
     )
     drafted = complete(system, f"User: {state.get('user_text')}\n\nFacts:\n" + "\n".join(facts))
