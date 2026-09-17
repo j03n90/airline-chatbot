@@ -1,6 +1,7 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef } from "react";
 import type { Theme } from "../theme";
 import type { Msg, Quote } from "../types";
+import MarkdownMessage from "./MarkdownMessage";
 import QuoteCard from "./QuoteCard";
 
 type Props = {
@@ -173,7 +174,7 @@ export default function ChatPane({
           <>
             {messages.map((msg, index) => (
               <article key={`${msg.role}-${index}`} className={`bubble ${msg.role}`}>
-                <p>{msg.text}</p>
+                {msg.role === "assistant" ? <MarkdownMessage text={msg.text} /> : <p>{msg.text}</p>}
               </article>
             ))}
             {busy && messages.length > 0 ? (
