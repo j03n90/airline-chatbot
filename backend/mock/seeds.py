@@ -295,6 +295,7 @@ CASE_CATALOG = [
         "title": "STA Basic baggage domestic vs international",
         "expected": "Domestic: no checked bag. International: 1 x 20 kg. Cabin 7 kg. Cite Suntrail only.",
         "starterMessage": "I am Ada Ng on STABAG, Economy Basic. What checked bags can I bring on the domestic segment versus the international one?",
+        "starterMessageZh": "我是 Ada Ng，订票号 STABAG，经济舱基础票。国内段和国际段分别能托运几件行李？",
     },
     {
         "id": "policy_qa_unknown",
@@ -302,6 +303,7 @@ CASE_CATALOG = [
         "title": "Unknown airline must not merge rules",
         "expected": "Assistant says it depends on the airline; does not quote a single fee as universal.",
         "starterMessage": "How much does it cost to change an Economy Basic ticket?",
+        "starterMessageZh": "改签经济舱基础票要多少钱？",
     },
     {
         "id": "policy_qa_pets",
@@ -309,6 +311,7 @@ CASE_CATALOG = [
         "title": "Pets are not in the policy pack",
         "expected": "Hand off. Do not invent a pet fee.",
         "starterMessage": "Can I bring my dog in the cabin?",
+        "starterMessageZh": "我能把狗带进客舱吗？",
     },
     {
         "id": "lookup_ok",
@@ -316,6 +319,7 @@ CASE_CATALOG = [
         "title": "Verified lookup",
         "expected": "Returns STA85X Suntrail Economy Standard with two segments.",
         "starterMessage": "Please look up booking STA85X for Ada Ng.",
+        "starterMessageZh": "请查询 Ada Ng 的订票 STA85X。",
     },
     {
         "id": "lookup_missing",
@@ -323,6 +327,7 @@ CASE_CATALOG = [
         "title": "Unknown PNR",
         "expected": "not_found. No invented itinerary.",
         "starterMessage": "Look up booking ZZZZZZ for Ada Ng.",
+        "starterMessageZh": "请查询 Ada Ng 的订票 ZZZZZZ。",
     },
     {
         "id": "lookup_surname_only",
@@ -330,6 +335,7 @@ CASE_CATALOG = [
         "title": "PNR + surname is not enough",
         "expected": "identity_insufficient.",
         "starterMessage": "Look up STA85X, last name Ng.",
+        "starterMessageZh": "查询 STA85X，姓 Ng。",
     },
     {
         "id": "change_sta_standard_mixed",
@@ -337,6 +343,7 @@ CASE_CATALOG = [
         "title": "STA Standard mixed-route change = USD 85",
         "expected": "Quote change_fee_usd=85. Booking unchanged until confirm.",
         "starterMessage": "Hi I am Ada Ng, PNR STA85X. Please change both flights one day later.",
+        "starterMessageZh": "你好，我是 Ada Ng，PNR STA85X。请把两段航班都改到晚一天。",
     },
     {
         "id": "change_nsa_flex_free",
@@ -344,6 +351,7 @@ CASE_CATALOG = [
         "title": "NSA Flex early change fee 0",
         "expected": "change_fee_usd=0, still ask to confirm.",
         "starterMessage": "I am Ada Ng, PNR NSAFLX. Change my flight one day later.",
+        "starterMessageZh": "我是 Ada Ng，PNR NSAFLX。请把航班改到晚一天。",
     },
     {
         "id": "change_bha_basic_denied",
@@ -351,6 +359,7 @@ CASE_CATALOG = [
         "title": "BHA Basic cannot change",
         "expected": "not_permitted. Booking stays scheduled.",
         "starterMessage": "I am Ada Ng, PNR BHABSC. I want to change my flight one day later.",
+        "starterMessageZh": "我是 Ada Ng，PNR BHABSC。我想把航班改到晚一天。",
     },
     {
         "id": "change_bha_standard_old",
@@ -358,6 +367,7 @@ CASE_CATALOG = [
         "title": "BHA Standard issued before cutover = USD 85",
         "expected": "change_fee_usd=85 because issued 2026-06-15.",
         "starterMessage": "I am Ada Ng, PNR BHAOLD. Change the flight one day later.",
+        "starterMessageZh": "我是 Ada Ng，PNR BHAOLD。请把航班改到晚一天。",
     },
     {
         "id": "change_bha_standard_new",
@@ -365,6 +375,7 @@ CASE_CATALOG = [
         "title": "BHA Standard issued on cutover = USD 55",
         "expected": "change_fee_usd=55 because issued 2026-07-01.",
         "starterMessage": "I am Ada Ng, PNR BHANEW. Change the flight one day later.",
+        "starterMessageZh": "我是 Ada Ng，PNR BHANEW。请把航班改到晚一天。",
     },
     {
         "id": "change_bha_standard_late",
@@ -372,6 +383,7 @@ CASE_CATALOG = [
         "title": "BHA Standard late window forbidden",
         "expected": "not_permitted.",
         "starterMessage": "I am Ada Ng, PNR BHALTE. Change my flight one day later.",
+        "starterMessageZh": "我是 Ada Ng，PNR BHALTE。请把航班改到晚一天。",
     },
     {
         "id": "cancel_nsa_flex",
@@ -379,6 +391,7 @@ CASE_CATALOG = [
         "title": "NSA Flex voluntary cancel original payment",
         "expected": "refund_type=original_payment, fare 500, extras not refundable, tax 55.",
         "starterMessage": "I am Ada Ng, PNR NSAFLX. Please cancel and refund my ticket.",
+        "starterMessageZh": "我是 Ada Ng，PNR NSAFLX。请取消机票并退款。",
     },
     {
         "id": "cancel_sta_standard_intl",
@@ -386,6 +399,7 @@ CASE_CATALOG = [
         "title": "STA Standard international itinerary: no fare refund",
         "expected": "refund_type=none, tax_refund_usd=50.",
         "starterMessage": "I am Ada Ng, PNR STAINL. Cancel the whole ticket.",
+        "starterMessageZh": "我是 Ada Ng，PNR STAINL。请取消整张机票。",
     },
     {
         "id": "cancel_bha_standard",
@@ -393,6 +407,7 @@ CASE_CATALOG = [
         "title": "BHA Standard: fare none, tax refundable",
         "expected": "refund_type=none, tax_refund_usd=35.",
         "starterMessage": "I am Ada Ng, PNR BHACAN. I want to cancel.",
+        "starterMessageZh": "我是 Ada Ng，PNR BHACAN。我要取消。",
     },
     {
         "id": "identity_other_adult",
@@ -400,6 +415,7 @@ CASE_CATALOG = [
         "title": "Cannot cancel the other adult",
         "expected": "Ada cannot act on Ben's ticket.",
         "starterMessage": "I am Ada Ng, PNR MULTI1. Cancel Ben Ng's ticket.",
+        "starterMessageZh": "我是 Ada Ng，PNR MULTI1。取消 Ben Ng 的机票。",
     },
     {
         "id": "handoff_partial",
@@ -407,6 +423,7 @@ CASE_CATALOG = [
         "title": "Partly flown refund -> desk",
         "expected": "handoff_required. Do not apply unused-ticket table.",
         "starterMessage": "I am Ada Ng, PNR PARTLY. Refund the rest of my trip.",
+        "starterMessageZh": "我是 Ada Ng，PNR PARTLY。请退剩余行程。",
     },
     {
         "id": "handoff_one_segment",
@@ -414,6 +431,7 @@ CASE_CATALOG = [
         "title": "Selected-segment cancel -> desk",
         "expected": "If the assistant tries one-segment cancel, mock returns handoff. Otherwise it should still refuse to invent a partial refund.",
         "starterMessage": "I am Ada Ng, PNR STA85X. Cancel just the first flight and keep the second.",
+        "starterMessageZh": "我是 Ada Ng，PNR STA85X。只取消第一段，第二段保留。",
     },
     {
         "id": "noshow_flex",
@@ -421,6 +439,7 @@ CASE_CATALOG = [
         "title": "Flex no-show: no fare refund, tax yes",
         "expected": "noshow, fare 0, tax 40.",
         "starterMessage": "I am Ada Ng, PNR NOSHOW. Please cancel and refund.",
+        "starterMessageZh": "我是 Ada Ng，PNR NOSHOW。请取消并退款。",
     },
     {
         "id": "disruption_bha_120",
@@ -428,6 +447,7 @@ CASE_CATALOG = [
         "title": "BHA 120-minute change does not qualify",
         "expected": "Voluntary table still applies; 120 < 180.",
         "starterMessage": "I am Ada Ng, PNR BHA120. The flight moved by two hours. Do I get a free refund?",
+        "starterMessageZh": "我是 Ada Ng，PNR BHA120。航班变动了两个小时。能免费退款吗？",
     },
     {
         "id": "disruption_bha_180",
@@ -435,6 +455,7 @@ CASE_CATALOG = [
         "title": "BHA 180-minute change qualifies",
         "expected": "Disruption refund of fare+tax+extras with no fee, including Basic.",
         "starterMessage": "I am Ada Ng, PNR BHA180. The flight moved by three hours. I want a refund.",
+        "starterMessageZh": "我是 Ada Ng，PNR BHA180。航班变动了三个小时，我要退款。",
     },
 ]
 
