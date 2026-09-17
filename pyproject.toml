@@ -29,7 +29,7 @@ dev = [
 pythonpath = ["."]
 testpaths = ["tests"]
 markers = [
-    "eval: conversation tests that call DeepSeek (need DEEPSEEK_API_KEY)",
+    "eval: conversation tests that call the chat API (need API_KEY)",
 ]
 filterwarnings = [
     "ignore::DeprecationWarning",

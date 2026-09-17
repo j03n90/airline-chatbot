@@ -26,7 +26,7 @@ We implemented, and tested, in this order:
 
 - **Two APIs in one process.** The assistant never imports the mock store; it goes through `MockClient`. Tests can exercise bookings without an LLM.
 - **RAG does not compute money.** MiniLM + three FAISS indexes answer "what does the PDF say". `backend/policy/engine.py` computes fees. That split is why STA Standard mixed-route changes stay at USD 20+65=85.
-- **Local MiniLM, not DeepSeek, for embeddings.** The corpus is tiny and English. Indexes are built with `uv run python -m backend.rag.ingest`.
+- **Local MiniLM, not the chat API, for embeddings.** The corpus is tiny and English. Indexes are built with `uv run python -m backend.rag.ingest`.
 - **Python packaging is uv only** (`pyproject.toml` + `uv.lock`). Interviewers should not `pip install -r`.
 - **LangGraph is a visible state machine** (ingest, route, retrieve/lookup/quote/confirm, compose), not a single ReAct blob.
 - **Short-term memory is a LangGraph checkpointer** keyed by `thread_id` (Sqlite on the app, in-memory in tests). It is not a hand-rolled session dict and not a long-term Memory Server / Store.
