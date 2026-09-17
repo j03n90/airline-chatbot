@@ -5,6 +5,7 @@ import MarkdownMessage from "./MarkdownMessage";
 import QuoteCard from "./QuoteCard";
 
 type Props = {
+  sessionId: string;
   status: string;
   labOpen: boolean;
   onToggleLab: () => void;
@@ -19,6 +20,12 @@ type Props = {
   onDraft: (value: string) => void;
   onSend: (event: FormEvent) => void;
 };
+
+function sessionUserLabel(id: string, chars = 8): string {
+  const compact = id.replace(/-/g, "");
+  if (compact.length <= chars) return compact;
+  return `${compact.slice(0, chars)}…`;
+}
 
 function SendIcon() {
   return (
@@ -79,6 +86,7 @@ function MoonIcon() {
 }
 
 export default function ChatPane({
+  sessionId,
   status,
   labOpen,
   onToggleLab,
@@ -136,7 +144,9 @@ export default function ChatPane({
           </span>
           <div>
             <h1>Airline Assistant</h1>
-            <p>{status}</p>
+            <p className="session-user" title={sessionId} aria-label={`User ${sessionId}`}>
+              {sessionUserLabel(sessionId)}
+            </p>
           </div>
         </div>
         <div className="header-actions">
@@ -190,21 +200,28 @@ export default function ChatPane({
         )}
       </section>
 
-      <form className="composer glass" onSubmit={onSend}>
-        <textarea
-          ref={inputRef}
-          value={draft}
-          onChange={(event) => onDraft(event.target.value)}
-          onKeyDown={onKeyDown}
-          placeholder="Message"
-          rows={1}
-          disabled={busy}
-          aria-label="Message"
-        />
-        <button type="submit" className="send-btn" disabled={!canSend} aria-label="Send">
-          <SendIcon />
-        </button>
-      </form>
+      <div className="composer-stack">
+        {status ? (
+          <p className="status-hint" title={status}>
+            {status}
+          </p>
+        ) : null}
+        <form className="composer glass" onSubmit={onSend}>
+          <textarea
+            ref={inputRef}
+            value={draft}
+            onChange={(event) => onDraft(event.target.value)}
+            onKeyDown={onKeyDown}
+            placeholder="Message"
+            rows={1}
+            disabled={busy}
+            aria-label="Message"
+          />
+          <button type="submit" className="send-btn" disabled={!canSend} aria-label="Send">
+            <SendIcon />
+          </button>
+        </form>
+      </div>
     </main>
   );
 }

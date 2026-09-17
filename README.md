@@ -81,9 +81,9 @@ uv run pytest                                                # 全量，含 assi
 
 ## 界面怎么点 / What to click in the UI
 
-打开 http://127.0.0.1:8080。主界面是聊天。用聊天顶栏标题为 **Mock lab** 的按钮（info 图标）或右侧 **Lab** 把手打开 Mock Lab。预设来自 `GET /api/mock/presets`（id 与 [eval/cases.md](eval/cases.md) 和 `tests/` 相同）。在 Lab 里点一条用例：聊天草稿会填入该条的 `starterMessage`。从聊天发送；需要看订座行时再打开 Lab。聊天输入在 Lab 打开时不可用，发消息前请先关掉 Lab。
+打开 http://127.0.0.1:8080。主界面是聊天。顶栏副标题是当前 `session_id` 的前 8 位（用户名；悬停看完整 id）。每个会话一个用户，不能切换。用顶栏 **Mock lab** 按钮（info 图标）或右侧 **Lab** 把手打开 Mock Lab。预设来自 `GET /api/mock/presets`（id 与 [eval/cases.md](eval/cases.md) 和 `tests/` 相同）。在 Lab 里点一条用例：聊天草稿会填入该条的 `starterMessage`，输入框上方出现该条的 status。从聊天发送；需要看订座行时再打开 Lab。聊天输入在 Lab 打开时不可用，发消息前请先关掉 Lab。
 
-Open http://127.0.0.1:8080. The main view is the chat. Open **Mock Lab** with the header button titled **Mock lab** (info icon) or the right-edge **Lab** handle. Presets come from `GET /api/mock/presets` (same ids as [eval/cases.md](eval/cases.md) and `tests/`). Click a case in Lab: the chat draft prefills that case's `starterMessage`. Send from chat; reopen Lab to watch booking rows. The composer is inert while Lab is open -- close Lab before sending.
+Open http://127.0.0.1:8080. The main view is the chat. The header subtitle is the first 8 characters of the current `session_id` (the username; hover for the full id). Each session is one user and cannot be switched. Open **Mock Lab** with the header button titled **Mock lab** (info icon) or the right-edge **Lab** handle. Presets come from `GET /api/mock/presets` (same ids as [eval/cases.md](eval/cases.md) and `tests/`). Click a case in Lab: the chat draft prefills that case's `starterMessage`, and status appears above the composer. Send from chat; reopen Lab to watch booking rows. The composer is inert while Lab is open -- close Lab before sending.
 
 推荐路径（Lab 里显示的用例 **title**）/ Recommended path (case **title** as shown in Lab):
 
@@ -110,7 +110,7 @@ Open http://127.0.0.1:8080. The main view is the chat. Open **Mock Lab** with th
    Under **Handoff**, click **Partly flown refund -> desk**. Expect a desk handoff; do not apply the wholly-unused refund table.
 6. **Custom / blank** -- 在 Lab 底部粘贴自己的 seed JSON 做调试。 / paste your own seed JSON at the bottom of Lab to debug.
 
-真实对话截图（430 x 800 手机聊天框；关 Lab 后才能输入）/ Screenshots from a real run, framed at 430 x 800 (phone chat; Lab closed so the composer is usable):
+真实对话截图（430 x 800 手机聊天框；顶栏显示 `session_id` 前缀；关 Lab 后才能输入）/ Screenshots from a real run, framed at 430 x 800 (phone chat; header shows the `session_id` prefix; Lab closed so the composer is usable):
 
 ![STA Standard 报价 USD 85，尚未执行 / quote USD 85, not yet executed](eval/screenshots/01-change-sta-quote-85.png)
 
