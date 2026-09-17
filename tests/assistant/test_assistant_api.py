@@ -34,6 +34,15 @@ def test_presets_cover_catalog():
     assert len(ids) >= 10
 
 
+def test_chat_without_session_is_404():
+    r = client.post(
+        "/api/assistant/chat",
+        json={"session_id": "does-not-exist", "message": "hello"},
+        headers={"Accept": "application/json"},
+    )
+    assert r.status_code == 404
+
+
 def test_change_sta_quote_then_confirm():
     mock_id, sid = start_case("change_sta_standard_mixed")
     first = chat(sid, "Hi I am Ada Ng, PNR STA85X. Please change both flights one day later.")

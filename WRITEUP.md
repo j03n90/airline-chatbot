@@ -20,17 +20,18 @@ We implemented, and tested, in this order:
 - **RAG does not compute money.** MiniLM + three FAISS indexes answer "what does the PDF say". `backend/policy/engine.py` computes fees. That split is why STA Standard mixed-route changes stay at USD 20+65=85.
 - **Local MiniLM, not DeepSeek, for embeddings.** The corpus is tiny and English. Indexes are built with `uv run python -m backend.rag.ingest` and again in Docker.
 - **Python packaging is uv only** (`pyproject.toml` + `uv.lock`). Interviewers should not `pip install -r`.
-- **LangGraph is a visible state machine** (ingest ? route ? retrieve/lookup/quote/confirm ? compose), not a single ReAct blob.
+- **LangGraph is a visible state machine** (ingest, route, retrieve/lookup/quote/confirm, compose), not a single ReAct blob.
+- **Short-term memory is a LangGraph checkpointer** keyed by `thread_id` (Sqlite on the app, in-memory in tests). It is not a hand-rolled session dict and not a long-term Memory Server / Store.
 - **Identity is strict.** PNR + surname is `identity_insufficient`. One adult cannot operate another adult's ticket.
 
 ## How we know it works
 
-`uv run pytest` ó 62 tests covering the fee matrix, mock state, retrieval isolation, routing, and assistant conversations (success, denial, handoff, no-show, issuance-date fees). See [eval/cases.md](eval/cases.md). One full change+confirm trace is in [eval/trace-one-conversation.md](eval/trace-one-conversation.md).
+`uv run pytest` ù 70 tests covering the fee matrix, mock state, retrieval isolation, routing, LangGraph thread checkpoints, and assistant conversations (success, denial, handoff, no-show, issuance-date fees). See [eval/cases.md](eval/cases.md). One full change+confirm trace is in [eval/trace-one-conversation.md](eval/trace-one-conversation.md).
 
 ## Limitations / next
 
 - Change requests currently move every remaining segment by +1 day (enough to demonstrate the fee table; not a full calendar search).
 - Disruption hotel/meal compensation is unspecified in the PDFs and not invented.
-- Multi-user concurrency is in-process memory, one process.
+- Sqlite checkpoints persist the conversation thread; the mock booking store is still in-process. A process restart drops bookings, so a leftover quote in sqlite cannot be confirmed against an empty mock. Production would swap Sqlite for Postgres and persist the booking world the same way. There is no long-term user memory.
 - Visual polish was not a goal.
 - Pets, lounge, loyalty, unaccompanied minors: we refuse and point to the desk.

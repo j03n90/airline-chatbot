@@ -15,3 +15,5 @@ frontend/dist/
 .cache/
 hf-cache/
 eval/actual-results.local.md
+data/
+*.sqlite
