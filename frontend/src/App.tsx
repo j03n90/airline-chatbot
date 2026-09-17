@@ -1,4 +1,4 @@
-import { FormEvent, PointerEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import BookingCard from "./components/BookingCard";
 import CaseList from "./components/CaseList";
 import ChatPane from "./components/ChatPane";
@@ -67,18 +67,6 @@ export default function App() {
     setTheme((current) => toggleTheme(current));
   }, []);
 
-  function onPointerMove(event: PointerEvent<HTMLDivElement>) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    event.currentTarget.style.setProperty(
-      "--lx",
-      `${((event.clientX - rect.left) / rect.width) * 100}%`,
-    );
-    event.currentTarget.style.setProperty(
-      "--ly",
-      `${((event.clientY - rect.top) / rect.height) * 100}%`,
-    );
-  }
-
   async function refreshBookings(id: string) {
     const data = await listBookings(id);
     setBookings(data.bookings);
@@ -141,7 +129,7 @@ export default function App() {
   }
 
   return (
-    <div className={`shell ${labOpen ? "lab-open" : ""}`} onPointerMove={onPointerMove}>
+    <div className={`shell ${labOpen ? "lab-open" : ""}`}>
       <div className="ambient" aria-hidden="true">
         <span className="orb orb-a" />
         <span className="orb orb-b" />

@@ -20,8 +20,6 @@
   --lab-width: 360px;
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
   --shadow: 0 18px 50px rgba(40, 60, 90, 0.16), 0 2px 8px rgba(40, 60, 90, 0.06);
-  --lx: 28%;
-  --ly: 12%;
   --glass-blur: 42px;
   --ambient-a: rgba(186, 214, 255, 0.7);
   --ambient-b: rgba(232, 214, 255, 0.55);
@@ -38,7 +36,7 @@
   --glass-inset-top: rgba(255, 255, 255, 0.78);
   --glass-inset-side: rgba(255, 255, 255, 0.28);
   --glass-inset-bottom: rgba(120, 140, 170, 0.12);
-  --glass-sheen-core: rgba(255, 255, 255, 0.5);
+  --glass-sheen-core: rgba(255, 255, 255, 0.32);
   --glass-sheen-mid: rgba(255, 255, 255, 0.08);
   --glass-sheen-wash: rgba(255, 255, 255, 0.22);
   --glass-noise-opacity: 0.045;
@@ -110,7 +108,7 @@
   --glass-inset-top: rgba(255, 255, 255, 0.18);
   --glass-inset-side: rgba(255, 255, 255, 0.08);
   --glass-inset-bottom: rgba(0, 0, 0, 0.28);
-  --glass-sheen-core: rgba(255, 255, 255, 0.16);
+  --glass-sheen-core: rgba(255, 255, 255, 0.1);
   --glass-sheen-mid: rgba(255, 255, 255, 0.04);
   --glass-sheen-wash: rgba(255, 255, 255, 0.06);
   --glass-noise-opacity: 0.06;
@@ -228,6 +226,7 @@ button:disabled { cursor: default; opacity: 0.45; }
   position: relative;
   isolation: isolate;
   background:
+    linear-gradient(180deg, var(--glass-sheen-wash), transparent 36%),
     linear-gradient(
       155deg,
       var(--glass-fill-start) 0%,
@@ -256,14 +255,31 @@ button:disabled { cursor: default; opacity: 0.45; }
   z-index: 0;
   border-radius: inherit;
   pointer-events: none;
+  opacity: 0;
   background:
     radial-gradient(
-      120% 80% at var(--lx) var(--ly),
+      90% 55% at 50% 0%,
       var(--glass-sheen-core),
-      var(--glass-sheen-mid) 32%,
-      transparent 62%
-    ),
-    linear-gradient(180deg, var(--glass-sheen-wash), transparent 36%);
+      var(--glass-sheen-mid) 38%,
+      transparent 68%
+    );
+  transition: opacity 0.22s var(--ease);
+}
+
+@media (hover: hover) {
+  .icon-btn:hover::before,
+  .composer:hover::before,
+  .lab-handle:hover::before {
+    opacity: 0.38;
+  }
+
+  .icon-btn:hover {
+    color: var(--accent-pressed);
+  }
+
+  .lab-handle:hover {
+    color: var(--text);
+  }
 }
 
 .glass::after {
@@ -943,6 +959,7 @@ button:disabled { cursor: default; opacity: 0.45; }
 
 @media (prefers-reduced-motion: reduce) {
   .orb { animation: none; }
+  .glass::before { transition: none; }
 }
 
 @media (prefers-reduced-transparency: reduce) {
