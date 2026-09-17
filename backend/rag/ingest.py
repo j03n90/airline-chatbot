@@ -8,7 +8,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 from backend.config import settings
-from backend.rag.corpus import CORPUS
+from backend.rag.corpus import CORPUS, POLICY_DOCUMENTS
 
 CODES = ("STA", "NSA", "BHA")
 
@@ -31,7 +31,13 @@ def build_indexes(index_dir: Path | None = None, model: SentenceTransformer | No
         faiss.write_index(index, str(index_dir / f"{code}.faiss"))
         (index_dir / f"{code}.json").write_text(json.dumps(chunks, ensure_ascii=False, indent=2), encoding="utf-8")
     (index_dir / "meta.json").write_text(
-        json.dumps({"embedding_model": settings.embedding_model, "airlines": list(CODES)}),
+        json.dumps(
+            {
+                "embedding_model": settings.embedding_model,
+                "airlines": list(CODES),
+                "documents": POLICY_DOCUMENTS,
+            }
+        ),
         encoding="utf-8",
     )
     return index_dir

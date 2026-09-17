@@ -3,24 +3,49 @@ from backend.api.schemas import AIRLINE_NAMES, AirlineCode
 # Curated chunks transcribed from the supplied Passenger_Policies PDFs.
 # Tables are kept whole so retrieval cannot split fee rows.
 
+STA_VERSION = "1.4"
+STA_EFFECTIVE_AT = "2026-03-01T00:00:00+00:00"
+NSA_VERSION = "2.0"
+NSA_EFFECTIVE_AT = "2026-01-01T00:00:00+00:00"
+BHA_VERSION = "3.0"
+BHA_EFFECTIVE_AT = "2026-07-01T00:00:00+00:00"
 
-def _chunk(airline: AirlineCode, section: str, title: str, page: int, kind: str, text: str) -> dict:
+POLICY_DOCUMENTS = [
+    {"airline": AirlineCode.STA.value, "version": STA_VERSION, "effective_at": STA_EFFECTIVE_AT},
+    {"airline": AirlineCode.NSA.value, "version": NSA_VERSION, "effective_at": NSA_EFFECTIVE_AT},
+    {"airline": AirlineCode.BHA.value, "version": BHA_VERSION, "effective_at": BHA_EFFECTIVE_AT},
+]
+
+
+def _make_chunk(airline: AirlineCode, version: str, effective_at: str):
     name = AIRLINE_NAMES[airline]
-    prefix = f"{name} ({airline.value}) - Section {section} {title}\n\n"
-    return {
-        "airline_code": airline.value,
-        "airline_name": name,
-        "section": section,
-        "title": title,
-        "page": page,
-        "kind": kind,
-        "text": prefix + text.strip(),
-    }
+    effective_date = effective_at[:10]
 
+    def chunk(section: str, title: str, page: int, kind: str, text: str) -> dict:
+        prefix = (
+            f"{name} ({airline.value}) v{version} effective {effective_date} - Section {section} {title}\n\n"
+        )
+        return {
+            "airline_code": airline.value,
+            "airline_name": name,
+            "version": version,
+            "effective_at": effective_at,
+            "section": section,
+            "title": title,
+            "page": page,
+            "kind": kind,
+            "text": prefix + text.strip(),
+        }
+
+    return chunk
+
+
+_sta = _make_chunk(AirlineCode.STA, STA_VERSION, STA_EFFECTIVE_AT)
+_nsa = _make_chunk(AirlineCode.NSA, NSA_VERSION, NSA_EFFECTIVE_AT)
+_bha = _make_chunk(AirlineCode.BHA, BHA_VERSION, BHA_EFFECTIVE_AT)
 
 STA = [
-    _chunk(
-        AirlineCode.STA,
+    _sta(
         "1",
         "Scope and definitions",
         1,
@@ -32,8 +57,7 @@ Travel has started once any segment on that ticket has been flown. A wholly unus
 All timestamps use UTC. The early window is 24 hours or more before departure, including exactly 24 hours. The late window is less than 24 hours but more than 0 hours. At exactly departure time or later, Section 5 no-show rules apply.
 Money is USD.""",
     ),
-    _chunk(
-        AirlineCode.STA,
+    _sta(
         "2.1",
         "Change fee schedule",
         2,
@@ -50,8 +74,7 @@ Example: one Economy Standard traveler changes one domestic and one internationa
 A lower replacement fare creates no refund and cannot offset a change fee.
 You may retain or upgrade the fare type, but not downgrade it. Airline, passenger and route endpoint substitutions are not voluntary changes.""",
     ),
-    _chunk(
-        AirlineCode.STA,
+    _sta(
         "3",
         "Voluntary cancellation and refunds",
         3,
@@ -67,8 +90,7 @@ Unused government taxes are returned to the original payment method on request f
 Purchased baggage and seat extras are non-refundable for a voluntary cancellation.
 A travel credit expires 365 elapsed days after issue and cannot be transferred or exchanged for cash.""",
     ),
-    _chunk(
-        AirlineCode.STA,
+    _sta(
         "5",
         "No-shows",
         3,
@@ -78,8 +100,7 @@ At exactly departure time, a new voluntary request is too late.
 All remaining segments are suspended pending service-desk contact; there is no automatic reinstatement.
 The remaining fare has no standard refund or credit, including Flex. Unused government taxes remain refundable.""",
     ),
-    _chunk(
-        AirlineCode.STA,
+    _sta(
         "6",
         "Airline-initiated disruptions",
         4,
@@ -90,8 +111,7 @@ Replacement travel: one rebooking on this airline to the same destination in the
 Refund before travel starts: full fare, unused taxes and unused extras to original payment. No cancellation fee, including Economy Basic.
 Submit the choice within 30 elapsed days after the disruption notice.""",
     ),
-    _chunk(
-        AirlineCode.STA,
+    _sta(
         "7",
         "Cabin and checked baggage",
         5,
@@ -107,8 +127,7 @@ Allowances are per passenger on each segment and cannot be pooled.
 A second cabin bag cannot be purchased. One additional checked bag may be purchased for USD 50 per passenger per segment (23 kg, 158 cm).
 Example: Economy Basic includes no checked bag on an Aster domestic segment and one 20 kg checked bag on an international segment.""",
     ),
-    _chunk(
-        AirlineCode.STA,
+    _sta(
         "8",
         "Booking ownership and requests",
         6,
@@ -119,8 +138,7 @@ A payer or lead booker may not change, cancel or view another adult traveler's p
 A quote alone does not alter a booking. Confirm the quoted change or cancellation before execution.
 Contact: https://service.suntrail-air.example or care@suntrail-air.example (fictional).""",
     ),
-    _chunk(
-        AirlineCode.STA,
+    _sta(
         "9",
         "Exceptions requiring manual review",
         6,
@@ -131,8 +149,7 @@ Lounge access, pet transport, loyalty benefits and unaccompanied-minor travel ar
 ]
 
 NSA = [
-    _chunk(
-        AirlineCode.NSA,
+    _nsa(
         "1",
         "Scope and definitions",
         1,
@@ -141,8 +158,7 @@ NSA = [
 Domestic means both endpoints are in the Republic of Aster. Early window: 24 hours or more. Late window: less than 24 hours but more than 0. At departure or later: no-show.
 Northstar Air is a full-service airline. Change fees do not vary by domestic vs international route except where cancellation itinerary type is defined.""",
     ),
-    _chunk(
-        AirlineCode.NSA,
+    _nsa(
         "2.1",
         "Change fee schedule",
         2,
@@ -158,8 +174,7 @@ Example: two Economy Standard travelers change two segments each in the early wi
 Every permitted change also requires payment of any positive fare difference. A lower fare creates no refund.
 Northstar Economy Flex changes are free in both the early and late windows, still subject to fare difference.""",
     ),
-    _chunk(
-        AirlineCode.NSA,
+    _nsa(
         "3",
         "Voluntary cancellation and refunds",
         3,
@@ -173,8 +188,7 @@ Northstar Economy Flex voluntary cancellation returns the fare to the original p
 Unused government taxes are refundable for every fare. Purchased extras are not refundable on a voluntary cancellation.
 Credits expire in 365 days, named to the passenger, not transferable, this airline only.""",
     ),
-    _chunk(
-        AirlineCode.NSA,
+    _nsa(
         "5",
         "No-shows",
         3,
@@ -182,8 +196,7 @@ Credits expire in 365 days, named to the passenger, not transferable, this airli
         """At exactly departure time a new voluntary request is too late and receives no-show treatment.
 Remaining segments are suspended. Remaining fare has no standard refund or credit, including Flex. Unused taxes remain refundable.""",
     ),
-    _chunk(
-        AirlineCode.NSA,
+    _nsa(
         "6",
         "Airline-initiated disruptions",
         4,
@@ -192,8 +205,7 @@ Remaining segments are suspended. Remaining fare has no standard refund or credi
 Replacement travel within 7 calendar days, same fare type, no change fee or fare difference.
 Wholly unused affected itinerary: refund full fare, unused taxes and unused extras, no cancellation fee including Economy Basic.""",
     ),
-    _chunk(
-        AirlineCode.NSA,
+    _nsa(
         "7",
         "Cabin and checked baggage",
         5,
@@ -208,8 +220,7 @@ Wholly unused affected itinerary: refund full fare, unused taxes and unused extr
 One additional checked bag USD 45 per passenger per segment, 23 kg. A second cabin bag cannot be purchased.
 A Flex traveler may carry two separate 23 kg bags; a single 30 kg bag exceeds the per-bag limit even if combined allowance is 46 kg.""",
     ),
-    _chunk(
-        AirlineCode.NSA,
+    _nsa(
         "8",
         "Booking ownership and requests",
         6,
@@ -218,8 +229,7 @@ A Flex traveler may carry two separate 23 kg bags; a single 30 kg bag exceeds th
 A booking reference, shared surname, or payment details alone is not authority.
 Quote must be confirmed before execution. Contact: https://service.northstar-air.example or care@northstar-air.example.""",
     ),
-    _chunk(
-        AirlineCode.NSA,
+    _nsa(
         "9",
         "Exceptions requiring manual review",
         6,
@@ -230,8 +240,7 @@ Lounge, pets, loyalty and unaccompanied minors are not covered in this publicati
 ]
 
 BHA = [
-    _chunk(
-        AirlineCode.BHA,
+    _bha(
         "1",
         "Scope and definitions",
         1,
@@ -240,8 +249,7 @@ BHA = [
 Early window 24 hours or more. Late window less than 24 hours but more than 0. Departure or later: no-show.
 Domestic: both endpoints in the Republic of Aster.""",
     ),
-    _chunk(
-        AirlineCode.BHA,
+    _bha(
         "2.1",
         "Change fee schedule",
         2,
@@ -255,8 +263,7 @@ Bluehaven Economy Basic cannot be changed in any window.
 Economy Standard cannot be changed in the late window.
 Standard issuance rule: tickets originally issued before 2026-07-01 00:00:00 UTC pay USD 85; those issued at or after that instant pay USD 55. Both apply only in the early window. The request date or reissue date does not select the fee.""",
     ),
-    _chunk(
-        AirlineCode.BHA,
+    _bha(
         "Appendix A",
         "Economy Standard change-fee update",
         6,
@@ -269,8 +276,7 @@ Standard issuance rule: tickets originally issued before 2026-07-01 00:00:00 UTC
 
 The late-window prohibition is unchanged. Positive fare differences still apply. The original issuance timestamp survives reissue.""",
     ),
-    _chunk(
-        AirlineCode.BHA,
+    _bha(
         "3",
         "Voluntary cancellation and refunds",
         3,
@@ -283,16 +289,14 @@ The late-window prohibition is unchanged. Positive fare differences still apply.
 Bluehaven Economy Standard never receives a fare refund or credit on a voluntary cancellation. Unused taxes are still refundable.
 Economy Flex only receives a travel credit (less USD 30) in the early window.""",
     ),
-    _chunk(
-        AirlineCode.BHA,
+    _bha(
         "5",
         "No-shows",
         3,
         "prose",
         """No-show at departure or later. Remaining fare has no standard refund or credit, including Flex. Unused taxes remain refundable.""",
     ),
-    _chunk(
-        AirlineCode.BHA,
+    _bha(
         "6",
         "Airline-initiated disruptions",
         4,
@@ -302,8 +306,7 @@ A schedule change qualifies when the absolute difference is 180 minutes or more,
 Replacement travel within 7 calendar days, no change fee or fare difference.
 Refund before travel starts: full fare, unused taxes and unused extras, no cancellation fee including Economy Basic.""",
     ),
-    _chunk(
-        AirlineCode.BHA,
+    _bha(
         "7",
         "Cabin and checked baggage",
         5,
@@ -319,8 +322,7 @@ Bluehaven Economy Basic has no included cabin or checked bag. Economy Basic may 
 One additional checked bag USD 40 per passenger per segment, 20 kg. Standard and Flex cannot purchase a second cabin bag.
 Example: a Standard traveler taking two segments with one 18 kg checked bag pays 2 x USD 40 = USD 80.""",
     ),
-    _chunk(
-        AirlineCode.BHA,
+    _bha(
         "8",
         "Booking ownership and requests",
         6,
@@ -328,8 +330,7 @@ Example: a Standard traveler taking two segments with one 18 kg checked bag pays
         """Named adult traveler after identity and booking details are verified. PNR plus surname alone is not authority.
 Contact: https://service.bluehaven-airways.example or care@bluehaven-airways.example.""",
     ),
-    _chunk(
-        AirlineCode.BHA,
+    _bha(
         "9",
         "Exceptions requiring manual review",
         6,
